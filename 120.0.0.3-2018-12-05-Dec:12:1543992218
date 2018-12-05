@@ -1,0 +1,211 @@
+Building configuration...
+
+Current configuration : 3301 bytes
+!
+upgrade fpd auto
+version 12.4
+service timestamps debug datetime msec
+service timestamps log datetime msec
+no service password-encryption
+!
+hostname PE1
+!
+boot-start-marker
+boot-end-marker
+!
+logging message-counter syslog
+!
+no aaa new-model
+ip source-route
+no ip icmp rate-limit unreachable
+ip cef
+!
+!
+!
+!
+no ip domain lookup
+ip domain name gns33333.com
+ip host PE1 120.0.0.3
+ip vrf vrf1
+ rd 65000:1
+ route-target export 65000:1
+ route-target import 65000:1
+!
+ip vrf vrf2
+ rd 65000:2
+ route-target export 65000:2
+ route-target import 65000:2
+!
+ip vrf vrf3
+ rd 65000:3
+ route-target export 65000:3
+ route-target import 65000:3
+!
+no ipv6 cef
+!
+multilink bundle-name authenticated
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+username admin privilege 15 secret 5 $1$VIkL$rRaZLCpFYdkAeAoNUp/Ug/
+username cango privilege 15 secret 5 $1$cuEb$zxSQI5yDLMBBVkTkKI.ju1
+archive
+ log config
+  hidekeys
+! 
+!
+!
+!
+!
+ip tcp synwait-time 5
+!
+!
+!
+!
+interface Loopback0
+ ip address 120.0.0.3 255.255.255.255
+!
+interface FastEthernet0/0
+ ip vrf forwarding vrf1
+ ip address 120.0.1.1 255.255.255.252
+ ip ospf 2 area 0
+ duplex auto
+ speed auto
+!
+interface FastEthernet0/1
+ ip vrf forwarding vrf2
+ ip address 120.0.1.5 255.255.255.252
+ ip ospf 3 area 0
+ duplex auto
+ speed auto
+!
+interface FastEthernet1/0
+ ip address 120.0.9.6 255.255.255.252
+ duplex half
+ mpls ip
+!
+interface FastEthernet2/0
+ ip vrf forwarding vrf3
+ ip address 130.0.1.1 255.255.255.252
+ ip ospf 4 area 0
+ duplex auto
+ speed auto
+!
+interface FastEthernet2/1
+ no ip address
+ duplex auto
+ speed auto
+!
+router ospf 2 vrf vrf1
+ router-id 120.0.1.1
+ log-adjacency-changes
+ redistribute bgp 65000 subnets
+!
+router ospf 3 vrf vrf2
+ router-id 120.0.1.5
+ log-adjacency-changes
+ redistribute bgp 65000 subnets
+!
+router ospf 4 vrf vrf3
+ router-id 130.0.1.1
+ log-adjacency-changes
+!
+router ospf 1
+ log-adjacency-changes
+ network 120.0.1.0 0.0.0.3 area 0
+ network 120.0.1.4 0.0.0.3 area 0
+ network 120.0.9.4 0.0.0.3 area 0
+ network 130.0.1.0 0.0.0.3 area 0
+ network 0.0.0.0 255.255.255.255 area 0
+!
+router bgp 65000
+ no synchronization
+ bgp log-neighbor-changes
+ neighbor 120.0.0.4 remote-as 65000
+ neighbor 120.0.0.4 update-source Loopback0
+ no auto-summary
+ !
+ address-family vpnv4
+  neighbor 120.0.0.4 activate
+  neighbor 120.0.0.4 send-community extended
+ exit-address-family
+ !
+ address-family ipv4 vrf vrf3
+  no synchronization
+ exit-address-family
+ !
+ address-family ipv4 vrf vrf2
+  redistribute ospf 3 vrf vrf2
+  no synchronization
+ exit-address-family
+ !
+ address-family ipv4 vrf vrf1
+  redistribute ospf 2 vrf vrf1
+  no synchronization
+ exit-address-family
+!
+ip forward-protocol nd
+ip route 0.0.0.0 0.0.0.0 192.168.1.51
+no ip http server
+no ip http secure-server
+!
+!
+!
+ip sla 2222
+ udp-jitter 120.0.0.4 5001
+ owner PE1_gnet
+ tag PE1 Video Class gnet
+ip sla 2408
+ udp-jitter 120.0.0.2 5000
+ frequency 30
+ip sla schedule 2408 life forever start-time now
+logging alarm informational
+snmp-server group authPriv v3 priv 
+snmp-server community public RO
+snmp-server community private RW
+no cdp log mismatch duplex
+!
+!
+!
+!
+!
+!
+!
+control-plane
+!
+!
+!
+!
+!
+!
+!
+gatekeeper
+ shutdown
+!
+!
+line con 0
+ exec-timeout 0 0
+ privilege level 15
+ logging synchronous
+ stopbits 1
+line aux 0
+ exec-timeout 0 0
+ privilege level 15
+ logging synchronous
+ stopbits 1
+line vty 0 4
+ login local
+!
+end
