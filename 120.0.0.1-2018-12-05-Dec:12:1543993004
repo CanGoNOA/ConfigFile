@@ -1,0 +1,144 @@
+Building configuration...
+
+Current configuration : 2170 bytes
+!
+upgrade fpd auto
+version 12.4
+service timestamps debug datetime msec
+service timestamps log datetime msec
+no service password-encryption
+!
+hostname P1
+!
+boot-start-marker
+boot-end-marker
+!
+logging message-counter syslog
+!
+no aaa new-model
+ip source-route
+no ip icmp rate-limit unreachable
+ip cef
+!
+!
+!
+!
+no ip domain lookup
+ip domain name cango.com
+no ipv6 cef
+!
+multilink bundle-name authenticated
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+username cango privilege 15 secret 5 $1$/1c4$Bg8ETIKaCfN5iT5Zww9Cn1
+username admin privilege 15 secret 5 $1$jRiT$fSxQOUdkyuzgOIMFL2I1t0
+archive
+ log config
+  hidekeys
+! 
+!
+!
+!
+!
+ip tcp synwait-time 5
+ip tftp source-interface FastEthernet0/0
+!
+!
+!
+!
+interface Loopback0
+ ip address 120.0.0.1 255.255.255.255
+!
+interface FastEthernet0/0
+ ip address 192.168.200.51 255.255.255.0
+ duplex auto
+ speed auto
+!
+interface FastEthernet0/1
+ ip address 120.0.9.1 255.255.255.252
+ duplex auto
+ speed auto
+ mpls ip
+!
+interface FastEthernet1/0
+ ip address 120.0.9.5 255.255.255.252
+ duplex half
+ mpls ip
+!
+router ospf 1
+ log-adjacency-changes
+ network 120.0.9.0 0.0.0.3 area 0
+ network 120.0.9.4 0.0.0.3 area 0
+ network 0.0.0.0 255.255.255.255 area 0
+!
+ip forward-protocol nd
+ip route 0.0.0.0 0.0.0.0 192.168.1.30
+ip route 0.0.0.0 0.0.0.0 192.168.200.44
+ip route 192.168.200.0 255.255.255.0 FastEthernet0/0
+ip route 192.168.200.0 255.255.255.0 192.168.200.44
+ip route 192.168.200.0 255.255.255.0 192.168.200.47
+ip route 192.168.200.1 255.255.255.255 192.168.200.47
+no ip http server
+no ip http secure-server
+!
+!
+!
+ip access-list standard private
+ip access-list standard public
+!
+logging alarm informational
+snmp-server group authPriv v3 priv 
+snmp-server community public RO
+snmp-server community private RW
+snmp-server community ro RO public
+snmp-server community rw RO private
+no cdp log mismatch duplex
+!
+!
+!
+!
+!
+!
+control-plane host
+ management-interface FastEthernet0/0 allow ftp ssh tftp snmp 
+!
+!
+control-plane
+!
+!
+!
+!
+!
+!
+!
+gatekeeper
+ shutdown
+!
+!
+line con 0
+ exec-timeout 0 0
+ privilege level 15
+ logging synchronous
+ stopbits 1
+line aux 0
+ exec-timeout 0 0
+ privilege level 15
+ logging synchronous
+ stopbits 1
+line vty 0 4
+ login local
+!
+end
